@@ -5,9 +5,9 @@ node_modules/
 dist/
 build/
 
-# Generated WASM binary (rebuilt from C++ source)
-# Note: src/wasm/engine.js stub IS tracked; the real build overwrites it.
-src/wasm/engine.wasm
+# Note: WASM artifacts (engine.js + engine.wasm) are committed so that
+# Netlify and other static hosts can build the frontend without Emscripten.
+# To update them, run: npm run wasm:rebuild
 
 # Editor
 .vscode/.cache/
