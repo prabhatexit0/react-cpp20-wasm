@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Generated WASM artifacts (rebuilt from C++ source)
+src/wasm/engine.js
+src/wasm/engine.wasm
+
+# Editor
+.vscode/.cache/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
