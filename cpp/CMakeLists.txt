@@ -38,7 +38,7 @@ target_link_options(engine PRIVATE
     "SHELL:-s MIN_WEBGL_VERSION=2"
     "SHELL:-s MAX_WEBGL_VERSION=2"
     # Export the GL initialisation helper so JS can pass in a canvas
-    "SHELL:-s EXPORTED_RUNTIME_METHODS=['GL','callMain']"
+    "SHELL:-s EXPORTED_RUNTIME_METHODS=['GL']"
     # Keep filesystem support off to reduce binary size
     "SHELL:-s FILESYSTEM=0"
     # Environment is the browser (web worker compatible too)
