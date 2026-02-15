@@ -1,33 +1,44 @@
 # React + C++20 WASM Boilerplate
 
-A production-ready boilerplate for building **Vite + React + TypeScript** applications with **C++20** compiled to **WebAssembly** via **Emscripten**.
+A production-ready boilerplate for building **Vite + React + TypeScript** applications with **C++20** compiled to **WebAssembly** via **Emscripten**, styled with **shadcn/ui** and **Tailwind CSS v4**.
 
 ## Architecture
 
 ```
 react-cpp20-wasm/
-├── cpp/                    # C++ source code
-│   ├── CMakeLists.txt      # CMake build config (C++20, Emscripten)
-│   └── main.cpp            # Engine: prime sieve + WebGL 2 init
+├── cpp/                          # C++ source code
+│   ├── CMakeLists.txt            # CMake build config (C++20, Emscripten)
+│   └── main.cpp                  # Engine: prime sieve + WebGL 2 init
 ├── src/
-│   ├── wasm/               # WASM build output (generated, git-ignored)
-│   │   ├── engine.js       # Emscripten ES6 loader
-│   │   └── engine.wasm     # Compiled binary
+│   ├── components/ui/            # shadcn/ui components
+│   │   ├── badge.tsx
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   ├── input.tsx
+│   │   ├── label.tsx
+│   │   └── separator.tsx
 │   ├── hooks/
-│   │   └── useWasmEngine.ts  # React hook for async WASM loading
-│   ├── wasm.d.ts           # TypeScript declarations for the C++ boundary
-│   ├── App.tsx             # Main React component
-│   ├── main.tsx            # React entry point
-│   └── index.css           # Global styles
-├── .vscode/                # VS Code DX configuration
-│   ├── extensions.json     # Recommended extensions (clangd, CMake Tools)
-│   ├── settings.json       # clangd args, IntelliSense disabled
-│   └── c_cpp_properties.json  # Fallback C++ config
+│   │   └── useWasmEngine.ts      # React hook for async WASM loading
+│   ├── lib/
+│   │   └── utils.ts              # cn() utility for Tailwind class merging
+│   ├── wasm/                     # WASM build output
+│   │   ├── engine.js             # Stub (overwritten by Emscripten build)
+│   │   └── engine.wasm           # Compiled binary (git-ignored)
+│   ├── wasm.d.ts                 # TypeScript declarations for C++ exports
+│   ├── wasm-engine.d.ts          # Ambient module declaration for engine.js
+│   ├── App.tsx                   # Main React component
+│   ├── main.tsx                  # React entry point
+│   └── index.css                 # Tailwind v4 + shadcn/ui theme variables
+├── .vscode/                      # VS Code DX configuration
+│   ├── extensions.json           # Recommended extensions (clangd, CMake Tools)
+│   ├── settings.json             # clangd args, IntelliSense disabled
+│   └── c_cpp_properties.json     # Fallback C++ config
 ├── scripts/
-│   └── build-wasm.sh       # Helper build script
-├── vite.config.ts          # Vite config with WASM support
-├── package.json            # NPM scripts & dependencies
-└── tsconfig.json           # TypeScript configuration
+│   └── build-wasm.sh             # Helper build script
+├── components.json               # shadcn/ui configuration
+├── vite.config.ts                # Vite + Tailwind CSS v4 plugin + WASM support
+├── package.json                  # NPM scripts & dependencies
+└── tsconfig.json                 # TypeScript configuration
 ```
 
 ## Prerequisites
@@ -36,7 +47,7 @@ react-cpp20-wasm/
 |------|---------|---------|
 | **Node.js** | >= 18 | Frontend toolchain |
 | **npm** | >= 9 | Package manager |
-| **Emscripten SDK** | >= 3.1.50 | C++ → WASM compiler |
+| **Emscripten SDK** | >= 3.1.50 | C++ to WASM compiler |
 | **CMake** | >= 3.20 | C++ build system |
 | **clangd** | >= 16 (optional) | C++ IDE intelligence |
 
@@ -96,7 +107,7 @@ npm run setup    # npm install + wasm:configure + wasm:build
 ```
 
 After a successful build, you should see:
-- `src/wasm/engine.js` — Emscripten ES6 module loader
+- `src/wasm/engine.js` — Emscripten ES6 module loader (overwrites the stub)
 - `src/wasm/engine.wasm` — Compiled WebAssembly binary
 - `build/compile_commands.json` — For clangd IntelliSense
 
@@ -107,6 +118,8 @@ npm run dev
 ```
 
 Open the URL shown in the terminal (typically `http://localhost:5173`).
+
+> **Note:** The frontend builds and runs even before the WASM build. The engine will show an error badge prompting you to build it.
 
 ## Development Workflow
 
@@ -122,6 +135,14 @@ Open the URL shown in the terminal (typically `http://localhost:5173`).
 2. Update the TypeScript declarations in `src/wasm.d.ts`.
 3. Rebuild: `npm run wasm:build`.
 4. Use the new function via the `engine` object from `useWasmEngine()`.
+
+### Adding shadcn/ui components
+
+```bash
+npx shadcn@latest add <component-name>
+```
+
+Components are installed to `src/components/ui/`. The project uses the **new-york** style with the **zinc** base colour and dark mode by default.
 
 ### VS Code IntelliSense
 
@@ -148,8 +169,10 @@ If IntelliSense is not working, ensure you've run the WASM build at least once s
 
 ## Key Design Decisions
 
+- **shadcn/ui + Tailwind CSS v4**: Composable, accessible UI primitives with the `@tailwindcss/vite` plugin — no `tailwind.config.js` needed.
+- **Dark mode by default**: `<html class="dark">` with full light/dark CSS variable support via shadcn's zinc theme.
 - **CMake over raw emcc**: Generates `compile_commands.json` for clangd, scales to multi-file projects, supports standard CMake workflows.
 - **ES6 module output**: `MODULARIZE=1` + `EXPORT_ES6=1` produces a standard ES module that Vite can import and code-split naturally.
-- **WASM output in `src/wasm/`**: Vite serves it directly during dev; the production build handles it as an asset.
+- **Engine stub**: A checked-in `src/wasm/engine.js` stub lets `npm run dev` and `npm run build` succeed before the C++ WASM compilation.
 - **TypeScript boundary typing**: `src/wasm.d.ts` provides strict types for every C++ export — no `any` at the WASM boundary.
 - **`useWasmEngine` hook**: Handles async loading, error states, and cleanup in a React-idiomatic way.
